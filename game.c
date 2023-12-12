@@ -24,10 +24,16 @@ extern unsigned char palette[];
 
 int map_h = 12;
 int map_v = 3;
+/*
 unsigned int level_map[] = {
 	1, 2, 3, 1, 2, 3, 1, 1, 4, 1, 2, 3,
-	1, 1, 4, 1, 2, 3, 1, 1, 1, 1, 1, 1,
+	1, 1, 4, 1, 2, 3, 1, 1, 9, 1, 1, 1,
 	1, 2, 3, 1, 2, 3, 1, 1, 4, 1, 2, 3
+};*/
+unsigned int level_map[] = {
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 };
 
 extern unsigned char knight_run0[];
@@ -39,6 +45,7 @@ extern unsigned char floor_1[];
 extern unsigned char floor_2[];
 extern unsigned char floor_3[];
 extern unsigned char floor_4[];
+extern unsigned char floor_spikes[];
 
 unsigned int tule_tilt, tule_size, tule_v, start_v, knight_tics, knight_step;
 unsigned char knight_status;
@@ -55,7 +62,7 @@ SCB_REHV_PAL knight = {
   0x01,
   0x0000,
   knight_run0,
-  40, 20,
+  10, 40,
   0x0100, 0x0100,
   // palette values can be found in .pal file provided by sprpck
   {0x01,0x23,0x45,0x67,0x89,0xAB,0xCD,0xEF}  
@@ -72,7 +79,7 @@ SCB_REHVST_PAL tule_1 = {
   //0x0020, 0xFF0F,
   //0x0004, 0x0040,
   0x0000, 0x0000,
-  {0x78,0x93,0x01,0x67,0x89,0xAB,0xCD,0xEF}
+  {0x78,0x95,0xA1,0x67,0x89,0xAB,0xCD,0xEF}
 };
 
 SCB_REHVST_PAL tule_2, tule_3, tule_4, tule_5, tule_6;
@@ -86,7 +93,7 @@ SCB_REHVST_PAL *work_spr;
 //functions goes here:
 unsigned char *get_tule(int tule_index){
 	switch(tule_index){
-		case RUN:
+		case 1:
 			return floor_1;
 			break;
 		case 2:
@@ -97,6 +104,9 @@ unsigned char *get_tule(int tule_index){
 			break;
 		case 4:
 			return floor_4;
+			break;
+		case 5:
+			return floor_spikes;
 			break;
 		default:
 			return floor_1;
@@ -125,6 +135,15 @@ unsigned char *get_knight(){
 			break;
 		default:
 			return knight_run0;
+	}
+}
+
+void add_rnd_row(row_number){
+	unsigned int i,j;
+	j=0;
+	for(i=0;i<map_v;i++){
+		level_map[row_number+j]=rand()%6;
+		j+=map_h;
 	}
 }
 
@@ -268,6 +287,13 @@ void physics(){
 				work_spr = (SCB_REHVST_PAL *)work_spr->next;
 			}
 		}
+		//random add map_h
+		if(x_map==0){
+			add_rnd_row(map_h);
+		}else{
+			add_rnd_row(x_map-1);
+		}
+		
 	}
 	distance++;
 	
@@ -281,6 +307,13 @@ void game_logic(){
 	tgi_sprite(&knight);
 	
 	joy = joy_read(JOY_1);
+	
+	if (JOY_UP(joy) && knight.vpos > 24) {
+		knight.vpos--;
+	}
+	if (JOY_DOWN(joy) && knight.vpos < 56) {
+		knight.vpos++;
+	}
 	
 	
 	if (JOY_BTN_1(joy) || JOY_BTN_2(joy) ) {
