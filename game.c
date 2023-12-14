@@ -30,11 +30,18 @@ unsigned int level_map[] = {
 	1, 1, 4, 1, 2, 3, 1, 1, 9, 1, 1, 1,
 	1, 2, 3, 1, 2, 3, 1, 1, 4, 1, 2, 3
 };*/
+
 unsigned int level_map[] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 };
+/*
+unsigned int level_map[] = {
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	2, 2, 2, 2,2, 2, 2, 2,2, 2, 2, 2,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+};*/
 
 extern unsigned char knight_run0[];
 extern unsigned char knight_run1[];
@@ -47,7 +54,7 @@ extern unsigned char floor_3[];
 extern unsigned char floor_4[];
 extern unsigned char floor_spikes[];
 
-unsigned int tule_tilt, tule_size, tule_v, start_v, knight_tics, knight_step;
+unsigned int tule_tilt, tule_size, tule_v, start_v, knight_tics, knight_step, x_knight;
 unsigned char knight_status;
 unsigned int tule_stretch = 0x0001;
 unsigned int tule_tilt_const = 0x0008;
@@ -147,8 +154,20 @@ void add_rnd_row(row_number){
 	}
 }
 
+void check_collide(){
+	unsigned int row_v, row_h,i;
+	row_v = (knight.vpos-14)>>4;
+	row_h =x_knight;
+	//row_h = ((distance+24)>>4)%map_h;
+	//row_h = ((distance+24+row_v)>>4)%map_h;	//rocket science!
+	for(i=0;i<row_v;i++){
+		row_h+=map_h;
+	}
+	level = level_map[row_h];
+}
+
 void init_level(){
-	signed int x, y;
+	unsigned int x, y;
 	tgi_install(&tgi_static_stddrv);
 	tgi_init();
 	
@@ -200,8 +219,11 @@ void init_level(){
 	for(y=0;y<map_v;y++){
 		for(x=0;x<map_h;x++){
 			
-			work_spr->vpos=40+y*16;
-			work_spr->hpos=x*16;
+			//work_spr->vpos=40+y*16;
+			//work_spr->hpos=x*16;
+			//optimized!
+			work_spr->vpos=40+(y<<4);
+			work_spr->hpos=x<<4;
 			work_spr->stretch=tule_stretch;
 			work_spr->hsize=tule_size;
 
@@ -229,65 +251,58 @@ void init_level(){
 
 void physics(){
 	// do physicals stuff here ;)
-	signed int x, y;
+	unsigned int x, y, y_multi;
 	tule_v = 0x0000;
-	//tule_v = parallax_magic;
-	//start_v = 0x0000;
+
 	work_spr = &tule_1;
 	for(y=0;y<map_v;y++){
 		for(x=0;x<map_h;x++){
 			work_spr->hpos=x*(16+tule_v)-distance%16;//+start_v;
-			//work_spr->hpos=x*20-distance%16;
 			
 			work_spr = (SCB_REHVST_PAL *)work_spr->next;
 		}
 		tule_v+=tule_v_const;
-		//start_v+=parallax_magic_v;
 	}
 	
-	//tule_tilt =0x0000;
 	if(distance%16==0){
-		x_map = (distance/16)%map_h;
+		x_map = (distance>>4)%map_h;
 		
 		work_spr = &tule_1;
+		y_multi =0;
 		for(y=0;y<map_v;y++){
-			//tule_tilt =0x0000;
 			for(x=x_map;x<map_h;x++){
-				work_spr->data=get_tule(level_map[y*map_h+x]);
-				//work_spr->tilt=tule_tilt;
-				//tule_tilt+=tule_tilt_const;
+				//work_spr->data=get_tule(level_map[y*map_h+x]);	//optimized!
+				work_spr->data=get_tule(level_map[y_multi+x]);
 				
 				work_spr = (SCB_REHVST_PAL *)work_spr->next;
 			}
 			for(x=0;x<x_map;x++){
-				work_spr->data=get_tule(level_map[y*map_h+x]);
-				//work_spr->tilt=tule_tilt;
-				//tule_tilt+=tule_tilt_const;
+				//work_spr->data=get_tule(level_map[y*map_h+x]);	//optimized!
+				work_spr->data=get_tule(level_map[y_multi+x]);
 				
 				work_spr = (SCB_REHVST_PAL *)work_spr->next;
 			}
+			y_multi+=map_h;
 		}
-			work_spr = &tule_1;
+		work_spr = &tule_1;
 		for(y=0;y<map_v;y++){
-			//tule_tilt =0xFFA0;
 			tule_tilt =0x0000;
-			//tule_tilt = parallax_magic;
+
 			for(x=x_map;x<map_h;x++){
 				work_spr->tilt=tule_tilt;
 				tule_tilt+=tule_tilt_const;
-				//tule_tilt+=x_map;
 				
 				work_spr = (SCB_REHVST_PAL *)work_spr->next;
 			}
 			for(x=0;x<x_map;x++){
 				work_spr->tilt=tule_tilt;
 				tule_tilt+=tule_tilt_const;
-				//tule_tilt+=x_map;
 				
 				work_spr = (SCB_REHVST_PAL *)work_spr->next;
 			}
 		}
 		//random add map_h
+		
 		if(x_map==0){
 			add_rnd_row(map_h);
 		}else{
@@ -295,6 +310,11 @@ void physics(){
 		}
 		
 	}
+	if (distance%16==8){
+		//no shame hack:
+		x_knight = ((distance+24)>>4)%map_h;
+	}
+	check_collide();
 	distance++;
 	
 }
@@ -308,21 +328,24 @@ void game_logic(){
 	
 	joy = joy_read(JOY_1);
 	
-	if (JOY_UP(joy) && knight.vpos > 24) {
+	if (JOY_UP(joy) && knight.vpos > 20) {
 		knight.vpos--;
 	}
-	if (JOY_DOWN(joy) && knight.vpos < 56) {
+	if (JOY_DOWN(joy) && knight.vpos < 58) {
 		knight.vpos++;
 	}
 	
-	
+	/*
 	if (JOY_BTN_1(joy) || JOY_BTN_2(joy) ) {
 		game_status = EXIT;
 	}
 	else{
 		if (game_status == EXIT ) game_status = LEVEL_UP;
-	}
-
+	}*/
+	/*
+	if (JOY_BTN_1(joy)) {
+		distance++;
+	}*/
 }
 
 void player_logic(){
@@ -341,11 +364,10 @@ void player_logic(){
 
 
 void game(){
-	//char text[20];
+	char text[20];
 	
 	playing = 1;
 	level = 1;
-	
 	
 	
 	game_status = NORMAL;
@@ -382,10 +404,12 @@ void game(){
 				
 				tgi_outtextxy(36, 48, "GAME PAUSED");
 			}
-			/*
+			
+			
+			tgi_setcolor(COLOR_RED);
 			itoa(level, text, 10);
-			tgi_outtextxy(8, 2, text);
-			*/
+			tgi_outtextxy(8, 8, text);
+			
 			std_functions();
 			tgi_updatedisplay();
 			randomizator2++;
