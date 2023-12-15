@@ -2,6 +2,7 @@
 
 #define RUN			0x00
 #define HIT			0x01
+#define DIE			0x02
 /*
 #define RUN03		0x02
 #define RUN04		0x03

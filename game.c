@@ -47,6 +47,7 @@ extern unsigned char knight_run0[];
 extern unsigned char knight_run1[];
 extern unsigned char knight_run2[];
 extern unsigned char knight_run3[];
+extern unsigned char knight_hit[];
 
 extern unsigned char floor_1[];
 extern unsigned char floor_2[];
@@ -55,6 +56,7 @@ extern unsigned char floor_4[];
 extern unsigned char floor_spikes[];
 
 unsigned int tule_tilt, tule_size, tule_v, start_v, knight_tics, knight_step, x_knight;
+unsigned int current_tule;
 unsigned char knight_status;
 unsigned int tule_stretch = 0x0001;
 unsigned int tule_tilt_const = 0x0008;
@@ -163,13 +165,14 @@ void check_collide(){
 	for(i=0;i<row_v;i++){
 		row_h+=map_h;
 	}
-	level = level_map[row_h];
+	current_tule = level_map[row_h];
 }
 
 void init_level(){
 	unsigned int x, y;
+	/*
 	tgi_install(&tgi_static_stddrv);
-	tgi_init();
+	tgi_init();*/
 	
 	tule_6 = tule_5 = tule_4 = tule_3 = tule_2 = tule_1;
 	tule_7 = tule_8 = tule_9 = tule_10 = tule_11 = tule_12 = tule_1;
@@ -233,11 +236,13 @@ void init_level(){
 		tule_size+=tule_size_const;
 	}
 	
+	/*
 	CLI();
 	while (tgi_busy()) ;
 	tgi_setpalette(palette);
 	tgi_setcolor(COLOR_WHITE);
 	tgi_setbgcolor(COLOR_BLACK);
+	*/
 	
 	/*
 	tgi_sprite(&tule_1);
@@ -315,25 +320,34 @@ void physics(){
 		x_knight = ((distance+24)>>4)%map_h;
 	}
 	check_collide();
-	distance++;
+	if(current_tule == 5 && knight_status == RUN){
+		knight_status = HIT;
+		//triky hack
+		knight_step = 1;
+		knight.data=knight_hit;
+	}
 	
 }
 
 void game_logic(){
 	unsigned char joy;
 	
-	tgi_clear();
+	//tgi_clear();
 	tgi_sprite(&tule_1);
 	tgi_sprite(&knight);
 	
 	joy = joy_read(JOY_1);
 	
-	if (JOY_UP(joy) && knight.vpos > 20) {
-		knight.vpos--;
+	if(knight_status == RUN){
+		if (JOY_UP(joy) && knight.vpos > 20) {
+			knight.vpos--;
+		}
+		if (JOY_DOWN(joy) && knight.vpos < 58) {
+			knight.vpos++;
+		}
+		distance++;
 	}
-	if (JOY_DOWN(joy) && knight.vpos < 58) {
-		knight.vpos++;
-	}
+
 	
 	/*
 	if (JOY_BTN_1(joy) || JOY_BTN_2(joy) ) {
@@ -349,8 +363,7 @@ void game_logic(){
 }
 
 void player_logic(){
-	
-	if(knight_step>8){
+	if(knight_step>8 && knight_status == RUN){
 		knight_tics++;
 		knight_step=0;
 		if(knight_tics>3){
@@ -358,7 +371,24 @@ void player_logic(){
 		}
 		knight.data=get_knight();
 	}
-
+	if(knight_status == HIT){
+		
+		//knight_step++;
+		if(knight_step%32==0){
+			knight.sprctl0 = BPP_4 | TYPE_NORMAL;
+			knight.hpos-=16;
+		}else{
+			if(knight_step%16==0){
+				knight.sprctl0 = BPP_4 | TYPE_NORMAL | HFLIP;
+				knight.hpos+=16;
+			}
+		}
+		if(knight_step>100){
+			game_status = LEVEL_UP;
+		}
+		
+	}
+	
 	knight_step++;
 }
 
@@ -368,10 +398,18 @@ void game(){
 	
 	playing = 1;
 	level = 1;
-	
+	current_tule =0;
 	
 	game_status = NORMAL;
+
 	tgi_clear();
+	
+	//debug
+	/*
+	tgi_setcolor(COLOR_RED);
+	tgi_outtextxy(16, 8, "BUMP");
+	*/
+	
 	init_level();
 	
 	// chiper init + start
@@ -383,7 +421,11 @@ void game(){
 	knight_step = 0;
 	knight_tics = 0;
 	knight_status = RUN;
-
+	
+	distance = 0;
+	
+	//tgi_updatedisplay();
+	
 	
 	while(playing){
 		if (!tgi_busy())
@@ -400,15 +442,16 @@ void game(){
 				player_logic();
 				physics();
 			} else{
-				tgi_clear();
+				//tgi_clear();
 				
 				tgi_outtextxy(36, 48, "GAME PAUSED");
 			}
 			
-			
+			/*
 			tgi_setcolor(COLOR_RED);
-			itoa(level, text, 10);
+			itoa(current_tule, text, 10);
 			tgi_outtextxy(8, 8, text);
+			*/
 			
 			std_functions();
 			tgi_updatedisplay();

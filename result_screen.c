@@ -10,18 +10,22 @@ extern void std_functions();
 
 unsigned int button_result;
 
-void end_logic(){
-	unsigned char joy;
+void end_init(){
 	char text[20];
 	
 	tgi_clear();
 	
+	tgi_setcolor(COLOR_RED);
 	tgi_outtextxy(8, 8, "GAME OVER");
 	tgi_outtextxy(8, 16, "You are level");
 	itoa(level, text, 10);
 	tgi_outtextxy(8, 24, text);
 	
 	tgi_outtextxy(8, 40, "Press A or B");
+}
+
+void end_logic(){
+	unsigned char joy;
 
 	joy = joy_read(JOY_1);
 	if (JOY_BTN_1(joy) || JOY_BTN_2(joy) ) {
@@ -31,14 +35,15 @@ void end_logic(){
 		if (button_result == 2) button_result = 0;
 	}
 	std_functions();
-	tgi_updatedisplay();
+	//tgi_updatedisplay();
 }
 
 
 void result_screen(){
 	
 	button_result = 1;
-	tgi_clear();	
+	end_init();
+	tgi_updatedisplay();
 	
 	while(button_result){
 		if (!tgi_busy()){

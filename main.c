@@ -74,6 +74,8 @@ void initialize()
 	//setpalette(palette);
 	tgi_setcolor(COLOR_WHITE);
 	tgi_setbgcolor(COLOR_BLACK);
+	
+	pause = 0;
 
 	tgi_clear();
 }
