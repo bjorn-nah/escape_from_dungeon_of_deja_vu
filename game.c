@@ -24,19 +24,20 @@ extern unsigned char palette[];
 
 int map_h = 12;
 int map_v = 3;
+unsigned int level_map[36];
 /*
 unsigned int level_map[] = {
 	1, 2, 3, 1, 2, 3, 1, 1, 4, 1, 2, 3,
 	1, 1, 4, 1, 2, 3, 1, 1, 9, 1, 1, 1,
 	1, 2, 3, 1, 2, 3, 1, 1, 4, 1, 2, 3
-};*/
+};
 
 unsigned int level_map[] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 };
-/*
+
 unsigned int level_map[] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	2, 2, 2, 2,2, 2, 2, 2,2, 2, 2, 2,
@@ -181,7 +182,8 @@ void init_level(){
 	tule_25= tule_26= tule_27= tule_28= tule_29= tule_30 = tule_1;
 	tule_31= tule_32= tule_33= tule_34= tule_35= tule_36 = tule_1;
 	
-	tule_25.next = (char *)&tule_36;
+	tule_36.next = 0x0000;
+	tule_35.next = (char *)&tule_36;
 	tule_34.next = (char *)&tule_35;
 	tule_33.next = (char *)&tule_34;
 	tule_32.next = (char *)&tule_33;
@@ -221,7 +223,7 @@ void init_level(){
 	work_spr = &tule_1;
 	for(y=0;y<map_v;y++){
 		for(x=0;x<map_h;x++){
-			
+			level_map[y*map_h+x]=1;
 			//work_spr->vpos=40+y*16;
 			//work_spr->hpos=x*16;
 			//optimized!
@@ -333,8 +335,8 @@ void game_logic(){
 	unsigned char joy;
 	
 	//tgi_clear();
-	tgi_sprite(&tule_1);
-	tgi_sprite(&knight);
+	/*tgi_sprite(&tule_1);
+	tgi_sprite(&knight);*/
 	
 	joy = joy_read(JOY_1);
 	
@@ -424,12 +426,13 @@ void game(){
 	
 	distance = 0;
 	
-	//tgi_updatedisplay();
+	tgi_updatedisplay();
 	
 	
 	while(playing){
 		if (!tgi_busy())
 		{
+			tgi_clear();
 			if(game_status == LEVEL_UP){
 				level++;
 				game_status = NORMAL;
@@ -438,11 +441,12 @@ void game(){
 				{playing = 0;}
 			}
 			if(!pause){
+				tgi_sprite(&tule_1);
+				tgi_sprite(&knight);
 				game_logic();
 				player_logic();
 				physics();
 			} else{
-				//tgi_clear();
 				
 				tgi_outtextxy(36, 48, "GAME PAUSED");
 			}
@@ -450,7 +454,7 @@ void game(){
 			/*
 			tgi_setcolor(COLOR_RED);
 			itoa(current_tule, text, 10);
-			tgi_outtextxy(8, 8, text);
+			tgi_outtextxy(64, 8, text);
 			*/
 			
 			std_functions();
