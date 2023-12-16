@@ -7,10 +7,8 @@
 
 #include "game.h"
 
-/*
 extern void init_music();
 extern void start_music();
-*/
 extern void std_functions();
 
 extern unsigned int level;
@@ -63,6 +61,7 @@ unsigned int tule_stretch = 0x0001;
 unsigned int tule_tilt_const = 0x0008;
 unsigned int tule_size_const = 0x0008;
 unsigned int tule_v_const = 0x0001;
+//unsigned int tule_v_const = 0x0003;
 
 unsigned int distance =0;
 
@@ -263,16 +262,20 @@ void physics(){
 
 	work_spr = &tule_1;
 	for(y=0;y<map_v;y++){
+		y_multi =0;
 		for(x=0;x<map_h;x++){
-			work_spr->hpos=x*(16+tule_v)-distance%16;//+start_v;
+			work_spr->hpos=y_multi-(distance%16);	//optimized!
 			
 			work_spr = (SCB_REHVST_PAL *)work_spr->next;
+			y_multi+=16+tule_v;
 		}
 		tule_v+=tule_v_const;
+		
 	}
 	
 	if(distance%16==0){
 		x_map = (distance>>4)%map_h;
+		
 		
 		work_spr = &tule_1;
 		y_multi =0;
@@ -309,7 +312,6 @@ void physics(){
 			}
 		}
 		//random add map_h
-		
 		if(x_map==0){
 			add_rnd_row(map_h);
 		}else{
@@ -321,6 +323,8 @@ void physics(){
 		//no shame hack:
 		x_knight = ((distance+24)>>4)%map_h;
 	}
+	
+	
 	check_collide();
 	if(current_tule == 5 && knight_status == RUN){
 		knight_status = HIT;
@@ -350,18 +354,6 @@ void game_logic(){
 		distance++;
 	}
 
-	
-	/*
-	if (JOY_BTN_1(joy) || JOY_BTN_2(joy) ) {
-		game_status = EXIT;
-	}
-	else{
-		if (game_status == EXIT ) game_status = LEVEL_UP;
-	}*/
-	/*
-	if (JOY_BTN_1(joy)) {
-		distance++;
-	}*/
 }
 
 void player_logic(){
@@ -415,10 +407,9 @@ void game(){
 	init_level();
 	
 	// chiper init + start
-	/*
 	init_music();
 	start_music();
-	*/
+	
 	
 	knight_step = 0;
 	knight_tics = 0;
@@ -463,6 +454,6 @@ void game(){
 		}
 	}	
 	// chiper stop
-	//asm("jsr SndStopAll");
+	asm("jsr SndStopAll");
 
 }

@@ -19,7 +19,7 @@ unsigned char palette[] = {
 
 unsigned int level;
 
-/*
+
 void setpalette(const int* palette)
 {
   char index;
@@ -28,10 +28,10 @@ void setpalette(const int* palette)
     POKE(0xFDA0 + index, palette[index] >> 8);
     POKE(0xFDB0 + index, palette[index] & 0xFF);
   }
-}*/
+}
 
 //chiper functions
-/*
+
 void init_music(void)
 {
 	asm("jsr SndInit");
@@ -57,7 +57,7 @@ void start_music(void)
 	asm("ldx #3");
 	asm("jsr SndStartSound");
 	asm("jsr SndPauseOff");
-}*/
+}
 
 void initialize()
 {
