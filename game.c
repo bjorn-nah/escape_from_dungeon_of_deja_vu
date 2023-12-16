@@ -170,9 +170,6 @@ void check_collide(){
 
 void init_level(){
 	unsigned int x, y;
-	/*
-	tgi_install(&tgi_static_stddrv);
-	tgi_init();*/
 	
 	tule_6 = tule_5 = tule_4 = tule_3 = tule_2 = tule_1;
 	tule_7 = tule_8 = tule_9 = tule_10 = tule_11 = tule_12 = tule_1;
@@ -236,19 +233,9 @@ void init_level(){
 		}
 		tule_size+=tule_size_const;
 	}
-	
-	/*
-	CLI();
-	while (tgi_busy()) ;
-	tgi_setpalette(palette);
-	tgi_setcolor(COLOR_WHITE);
-	tgi_setbgcolor(COLOR_BLACK);
-	*/
-	
-	/*
-	tgi_sprite(&tule_1);
-	tgi_updatedisplay();
-	*/
+	knight.data=knight_run0;
+	knight.vpos=40;
+	knight.hpos=10;
 	
 	pause = 0;
 }
@@ -391,19 +378,13 @@ void game(){
 	char text[20];
 	
 	playing = 1;
-	level = 1;
+	level = 0;
 	current_tule =0;
 	
 	game_status = NORMAL;
 
 	tgi_clear();
-	
-	//debug
-	/*
-	tgi_setcolor(COLOR_RED);
-	tgi_outtextxy(16, 8, "BUMP");
-	*/
-	
+
 	init_level();
 	
 	// chiper init + start
@@ -425,11 +406,9 @@ void game(){
 		{
 			tgi_clear();
 			if(game_status == LEVEL_UP){
-				level++;
+				level=distance;
 				game_status = NORMAL;
-				//init_level();
-				//srand(randomizator2);
-				{playing = 0;}
+				playing = 0;
 			}
 			if(!pause){
 				tgi_sprite(&tule_1);

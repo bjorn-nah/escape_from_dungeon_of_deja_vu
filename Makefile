@@ -45,6 +45,7 @@ target = efdodv
 # adpat to your resourses
 objects = main.o result_screen.o title_screen.o game.o \
 	soundbs.o it_dont_fit_well.o\
+	title01.o title02.o title03.o title04.o title05.o title06.o\
 	knight_run0.o knight_run1.o knight_run2.o knight_run3.o\
 	knight_hit.o\
 	floor_1.o floor_2.o floor_3.o floor_4.o \

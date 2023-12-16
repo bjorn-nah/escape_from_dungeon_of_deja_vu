@@ -44,13 +44,14 @@ void result_screen(){
 	
 	button_result = 1;
 	tgi_clear();
-	tgi_setcolor(COLOR_RED);
-	tgi_outtextxy(8, 8, "GAME OVER");
-	tgi_outtextxy(8, 16, "You are level");
+	tgi_setcolor(COLOR_PURPLE);
+	tgi_outtextxy(40, 8, "GAME OVER");
+	tgi_outtextxy(8, 24, "Number of runned");
+	tgi_outtextxy(8, 32, "frames:");
 	itoa(level, text, 10);
-	tgi_outtextxy(8, 24, text);
+	tgi_outtextxy(72, 32, text);
 	
-	tgi_outtextxy(8, 40, "Press A or B");
+	tgi_outtextxy(32, 88, "Press A or B");
 	
 	tgi_updatedisplay();
 	
