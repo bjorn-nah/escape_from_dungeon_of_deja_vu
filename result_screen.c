@@ -51,7 +51,10 @@ void result_screen(){
 	itoa(level, text, 10);
 	tgi_outtextxy(72, 32, text);
 	
-	tgi_outtextxy(32, 88, "Press A or B");
+	tgi_outtextxy(32, 48, "Press A or B");
+	
+	tgi_outtextxy(24, 80, "Party version.");
+	tgi_outtextxy(8, 88, "Thanks for paying!");
 	
 	tgi_updatedisplay();
 	

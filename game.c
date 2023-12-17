@@ -23,6 +23,7 @@ extern unsigned char palette[];
 int map_h = 12;
 int map_v = 3;
 unsigned int level_map[36];
+unsigned int row_current[3],row_last[3];
 /*
 unsigned int level_map[] = {
 	1, 2, 3, 1, 2, 3, 1, 1, 4, 1, 2, 3,
@@ -42,6 +43,7 @@ unsigned int level_map[] = {
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
 };*/
 
+
 extern unsigned char knight_run0[];
 extern unsigned char knight_run1[];
 extern unsigned char knight_run2[];
@@ -55,7 +57,7 @@ extern unsigned char floor_4[];
 extern unsigned char floor_spikes[];
 
 unsigned int tule_tilt, tule_size, tule_v, start_v, knight_tics, knight_step, x_knight;
-unsigned int current_tule;
+unsigned int current_tule, difficulty, debug;
 unsigned char knight_status;
 unsigned int tule_stretch = 0x0001;
 unsigned int tule_tilt_const = 0x0008;
@@ -148,11 +150,42 @@ unsigned char *get_knight(){
 }
 
 void add_rnd_row(row_number){
-	unsigned int i,j;
-	j=0;
+	unsigned int i,j,spike_counter;
+	
+	spike_counter=0;
+	//random the current row
 	for(i=0;i<map_v;i++){
-		level_map[row_number+j]=rand()%6;
+		row_current[i]=rand()%4+1;
+		if(rand()<difficulty){
+			row_current[i]=5;
+		}
+		if(row_last[i]>4){
+			spike_counter++;
+		}
+	}	
+	debug = row_last[1];
+	//forbid to get full spike row
+	if(row_current[0]>4 && row_current[1]>4 && row_current[2]>4){
+		i=rand()%3;
+		row_current[i]=1;
+	} 
+	//forbid no issue
+	if(spike_counter>1){
+		for(i=0;i<map_v;i++){
+			if(row_last[i]<6){
+				row_current[i]=1;
+			}
+		}
+	}
+	j=0;
+	//copy current row to level map
+	for(i=0;i<map_v;i++){
+		level_map[row_number+j]=row_current[i];
 		j+=map_h;
+	}
+	//copy current to last
+	for(i=0;i<map_v;i++){
+		row_last[i]=row_current[i];
 	}
 }
 
@@ -233,9 +266,17 @@ void init_level(){
 		}
 		tule_size+=tule_size_const;
 	}
+	for(y=0;y<map_v;y++){
+		row_current[y]=1;
+		row_last[y]=1;
+	}
+	
+	
 	knight.data=knight_run0;
 	knight.vpos=40;
 	knight.hpos=10;
+	
+	
 	
 	pause = 0;
 }
@@ -339,6 +380,7 @@ void game_logic(){
 			knight.vpos++;
 		}
 		distance++;
+		difficulty+=2;
 	}
 
 }
@@ -380,6 +422,8 @@ void game(){
 	playing = 1;
 	level = 0;
 	current_tule =0;
+	debug =0;
+	difficulty = 0;
 	
 	game_status = NORMAL;
 
@@ -421,11 +465,13 @@ void game(){
 				tgi_outtextxy(36, 48, "GAME PAUSED");
 			}
 			
+			//debug
 			/*
 			tgi_setcolor(COLOR_RED);
-			itoa(current_tule, text, 10);
+			itoa(debug, text, 10);
 			tgi_outtextxy(64, 8, text);
 			*/
+			
 			
 			std_functions();
 			tgi_updatedisplay();
