@@ -46,7 +46,7 @@ void result_screen(){
 	tgi_clear();
 	tgi_setcolor(COLOR_PURPLE);
 	tgi_outtextxy(40, 8, "GAME OVER");
-	tgi_outtextxy(8, 24, "Number of runned");
+	tgi_outtextxy(8, 24, "Number of run");
 	tgi_outtextxy(8, 32, "frames:");
 	itoa(level, text, 10);
 	tgi_outtextxy(72, 32, text);
@@ -54,7 +54,7 @@ void result_screen(){
 	tgi_outtextxy(32, 48, "Press A or B");
 	
 	tgi_outtextxy(24, 80, "Party version.");
-	tgi_outtextxy(8, 88, "Thanks for paying!");
+	tgi_outtextxy(8, 88, "Thanks for playing");
 	
 	tgi_updatedisplay();
 	
